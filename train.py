@@ -13,7 +13,6 @@ if __name__ == "__main__":
     parser.add_argument('--gan_type', type=str, default='WGAN', help='the type of GAN for training')
     parser.add_argument('--multi_gpu', type=bool, default=False, help='nn.Parallel needs or not')
     parser.add_argument('--gpu_ids', type=str, default="0", help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-    parser.add_argument('--cudnn_benchmark', type=bool, default=True, help='True for unchanged input data type')
     parser.add_argument('--checkpoint_interval', type=int, default=1, help='interval between model checkpoints')
     parser.add_argument('--load_name', type=str, default='', help='load model name')
     # Training parameters

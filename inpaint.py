@@ -12,11 +12,10 @@ if __name__ == "__main__":
     # ----------------------------------------
     parser = argparse.ArgumentParser()
     # General parameters
-    parser.add_argument('--load_path', type=str, default='./archive/no_train_eval_WGAN/models/deepfillv2_LSGAN_epoch40_batchsize5', help='saving path that is a folder')
+    parser.add_argument('--load_path', type=str, default='./archive/no_train_eval_WGAN/models/deepfillv2_LSGAN_epoch40_batchsize5', help='path of model weights')
     parser.add_argument('--test_path', type=str, default='./test', help='training samples path that is a folder')
     parser.add_argument('--multi_gpu', type=bool, default=False, help='nn.Parallel needs or not')
     parser.add_argument('--gpu_ids', type=str, default="0", help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-    parser.add_argument('--cudnn_benchmark', type=bool, default=True, help='True for unchanged input data type')
     parser.add_argument('--load_name', type=str, default='', help='load model name')
     # Evaluation parameters
     parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
