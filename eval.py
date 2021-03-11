@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # General parameters
     parser.add_argument('--load_path', type=str, default='./archive/no_train_eval_WGAN/models/deepfillv2_LSGAN_epoch40_batchsize5', help='saving path that is a folder')
-    parser.add_argument('--test_path', type=str, default='./test', help='folder to place image results')
+    parser.add_argument('--eval_path', type=str, default='./eval', help='folder to place image results')
     parser.add_argument('--multi_gpu', type=bool, default=False, help='nn.Parallel needs or not')
     parser.add_argument('--gpu_ids', type=str, default="0", help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
     parser.add_argument('--load_name', type=str, default='', help='load model name')
@@ -58,19 +58,19 @@ if __name__ == "__main__":
 
     # configurations
     load_folder = os.path.dirname(opt.load_path)
-    test_folder = opt.test_path
+    eval_folder = opt.eval_path
     if not os.path.exists(load_folder):
         os.makedirs(load_folder)
-    if not os.path.exists(test_folder):
-        os.makedirs(test_folder)
+    if not os.path.exists(eval_folder):
+        os.makedirs(eval_folder)
 
     # Enter main function
     generator = utils.create_generator(opt)
     state_dict = paddle.load(opt.load_path)
     generator.set_state_dict(state_dict)
-    testset = dataset.InpaintDataset(opt) #img,mask
+    evalset = dataset.InpaintDataset(opt) #img,mask
     #testset = dataset.ValidationSet_with_Known_Mask(opt) #img,mask,image_name
-    dataloader = DataLoader(testset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.num_workers)
+    dataloader = DataLoader(evalset, batch_size=opt.batch_size, shuffle=True, num_workers=opt.num_workers)
     generator.eval()
     for batch_idx, (img, mask) in enumerate(dataloader):
         img = paddle.to_tensor(img)
@@ -87,5 +87,5 @@ if __name__ == "__main__":
         mask = paddle.concat((mask, mask, mask), 1)
         img_list = [img, mask, masked_img, first_out, second_out, second_out_wholeimg]
         name_list = ['raw', 'mask', 'masked_img', 'first_out', 'second_out','second_out_wholeimg']
-        utils.save_sample_png(sample_folder=test_folder, sample_name='index%d' % (batch_idx + 1), img_list=img_list,
+        utils.save_sample_png(sample_folder=eval_folder, sample_name='index%d' % (batch_idx + 1), img_list=img_list,
                               name_list=name_list, pixel_max_cnt=255)
