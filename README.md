@@ -14,22 +14,22 @@ Download pretrained weights of generator from following link()
 
 - train model
 
-    >python train.py
+    >python train.py [--baseroot {path to image folder}] [--epoch {total epoch}]
     
-    or 
-    >python train.py --baseroot {path to image folder} 
+- resume training
+
+    >python train.py --resume_epoch {num} [--baseroot {path to image folder}] [--epoch {total epoch}]
 
 
 - evaluate model
 
-    >python eval.py --load_path {path to generator state_dict} --baseroot {path to image folder} 
+    >python eval.py [--load_path {path to generator state_dict}] [--baseroot {path to image folder} ]
 
 
 - inpaint images
 
-    >python inpaint.py --load_path {path to generator state_dict} --baseroot {path to image folder} --maskroot {mask to image folder} 
+    >python inpaint.py [--load_path {path to generator state_dict}] [--baseroot {path to image folder}] [--maskroot {mask to image folder}] 
 
 ## Todo
-- resume training
 - well trained weight for datasets(need huge GPU resource for trainning)
 - sketch

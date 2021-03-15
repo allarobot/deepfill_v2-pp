@@ -14,6 +14,7 @@ if __name__ == "__main__":
     parser.add_argument('--multi_gpu', type=bool, default=False, help='nn.Parallel needs or not')
     parser.add_argument('--gpu_ids', type=str, default="0", help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
     parser.add_argument('--checkpoint_interval', type=int, default=1, help='interval between model checkpoints')
+    parser.add_argument('--resume_epoch', type=int, default=0, help='')
     parser.add_argument('--load_name', type=str, default='', help='load model name')
     # Training parameters
     parser.add_argument('--epochs', type=int, default=4, help='number of epochs of training')
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument('--init_type', type=str, default='xavier', help='the initialization type')
     parser.add_argument('--init_gain', type=float, default=0.02, help='the initialization gain')
     # Dataset parameters
-    parser.add_argument('--baseroot', type=str, default=r"F:\Places365\val_large", help='the training folder')
+    parser.add_argument('--baseroot', type=str, default=r"F:\Places365\train_large\a\airfield", help='the training dataset folder')
     parser.add_argument('--mask_type', type=str, default='free_form', help='mask type')
     parser.add_argument('--imgsize', type=int, default=256, help='size of image')
     parser.add_argument('--margin', type=int, default=10, help='margin of image')
@@ -65,7 +66,6 @@ if __name__ == "__main__":
         os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu_ids
     else:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
     # Enter main function
     import trainer

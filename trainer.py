@@ -8,6 +8,47 @@ from paddle.io import DataLoader
 import dataset
 import utils
 
+suffix_setting = ['.g','.d','.optg','.optd']
+def save_model(nets, epoch, opt):
+    """Save the model at "checkpoint_interval" and its multiple"""
+    model_name = 'deepfillv2_%s_epoch%d' % (opt.gan_type, epoch)
+    model_name = os.path.join(opt.save_path, model_name)
+    if epoch % opt.checkpoint_interval == 0:
+        for i,net in enumerate(nets):
+            suffix = suffix_setting[i]
+            paddle.save(net.state_dict(), model_name+suffix)
+    print('The trained model is successfully saved at epoch %d' % (epoch))
+
+def load_model(opt):
+    """Save the model at "checkpoint_interval" and its multiple"""
+    nets = []
+    for suffix in suffix_setting:
+        model_name = opt.load_name + suffix
+        full_model_name = os.path.join(opt.save_path, model_name)
+        if os.path.exists(full_model_name):
+            net = paddle.load(full_model_name)
+            nets.append(net)
+    if nets is []:
+        print('no pretrain model found')
+    else:
+        print('The trained model is successfully loaded')
+    return nets
+
+def resume_model(nets,opt):
+    """Save the model at "checkpoint_interval" and its multiple"""
+    model_name = 'deepfillv2_%s_epoch%d' % (opt.gan_type, opt.resume_epoch)
+    fully_resumed = True
+    for i,suffix in enumerate(suffix_setting):
+        full_model_name = opt.load_name + suffix
+        abs_model_name = os.path.join(opt.save_path, full_model_name)
+        if os.path.exists(abs_model_name):
+            state_dict = paddle.load(abs_model_name)
+            nets[i].set_state_dict(state_dict)
+            print(f'The trained model:{model_name} is reloaded successfully')
+        else:
+            print(f'The trained model:{model_name} is not found')
+            fully_resumed = False
+    return fully_resumed
 
 def WGAN_trainer(opt):
     # ----------------------------------------
@@ -40,16 +81,12 @@ def WGAN_trainer(opt):
                                         beta2=opt.b2, weight_decay=opt.weight_decay)
     optimizer_d = paddle.optimizer.Adam(parameters=discriminator.parameters(), learning_rate=scheduler_d, beta1=opt.b1,
                                         beta2=opt.b2, weight_decay=opt.weight_decay)
-
-
-    # Save the model if pre_train == True
-    def save_model(net, epoch, opt):
-        """Save the model at "checkpoint_interval" and its multiple"""
-        model_name = 'deepfillv2_WGAN_epoch%d_batchsize%d' % (epoch, opt.batch_size)
-        model_name = os.path.join(save_folder, model_name)
-        if epoch % opt.checkpoint_interval == 0:
-            paddle.save(net.state_dict(), model_name)
-            print('The trained model is successfully saved at epoch %d' % (epoch))
+    start_epoch = 0
+    if opt.resume_epoch>0:
+        nets = [generator,optimizer_g,discriminator,optimizer_d]
+        ret = resume_model(nets,opt)
+        if ret:
+            start_epoch = opt.resume_epoch
 
     # ----------------------------------------
     #       Initialize training dataset
@@ -72,7 +109,7 @@ def WGAN_trainer(opt):
     # Training loop
     generator.train()
     discriminator.train()
-    for epoch in range(opt.epochs):
+    for epoch in range(start_epoch,opt.epochs):
         for batch_idx, (img, mask) in enumerate(dataloader):
             ### Train Discriminator
 
@@ -144,8 +181,8 @@ def WGAN_trainer(opt):
             scheduler_d.step()
 
         # Save the model
-        save_model(generator, (epoch + 1), opt)
-        save_model(discriminator, (epoch + 1), opt)
+        nets = [generator,optimizer_g,discriminator,optimizer_d]
+        save_model(nets, (epoch + 1), opt)
 
         ### Sample data every epoch
         masked_img = img * (1 - mask) + mask
@@ -186,22 +223,12 @@ def LSGAN_trainer(opt):
     optimizer_d = paddle.optimizer.Adam(parameters=discriminator.parameters(), learning_rate=scheduler_d, beta1=opt.b1,
                                         beta2=opt.b2, weight_decay=opt.weight_decay)
 
-    # Save the model if pre_train == True
-    def save_model(net, epoch, opt):
-        """Save the model at "checkpoint_interval" and its multiple"""
-        model_name = 'deepfillv2_LSGAN_epoch%d_batchsize%d' % (epoch, opt.batch_size)
-        model_name = os.path.join(save_folder, model_name)
-        # if opt.multi_gpu == True:
-        #     if epoch % opt.checkpoint_interval == 0:
-        #         paddle.save(net.module.state_dict(), model_name)
-        #         print('The trained model is successfully saved at epoch %d' % (epoch))
-        # else:
-        #     if epoch % opt.checkpoint_interval == 0:
-        #         paddle.save(net.state_dict(), model_name)
-        #         print('The trained model is successfully saved at epoch %d' % (epoch))
-        if epoch % opt.checkpoint_interval == 0:
-            paddle.save(net.state_dict(), model_name)
-            print('The trained model is successfully saved at epoch %d' % (epoch))
+    start_epoch = 0
+    if opt.resume_epoch>0:
+        nets = [generator,optimizer_g,discriminator,optimizer_d]
+        ret = resume_model(nets,opt)
+        if ret:
+            start_epoch = opt.resume_epoch
 
     # ----------------------------------------
     #       Initialize training dataset
@@ -222,7 +249,7 @@ def LSGAN_trainer(opt):
     prev_time = time.time()
 
     # Training loop
-    for epoch in range(opt.epochs):
+    for epoch in range(start_epoch, opt.epochs):
         for batch_idx, (img, mask) in enumerate(dataloader):
 
             # LSGAN vectors
@@ -302,9 +329,8 @@ def LSGAN_trainer(opt):
         # adjust_learning_rate(opt.lr_d, optimizer_d, (epoch + 1), opt)
 
         # Save the model
-        save_model(generator, (epoch + 1), opt)
-        # save_model(discriminator, (epoch + 1), opt)
-
+        nets = [generator,optimizer_g,discriminator,optimizer_d]
+        save_model(nets, (epoch + 1), opt)
         ### Sample data every epoch
         masked_img = img * (1 - mask) + mask
         mask = paddle.concat((mask, mask, mask), 1)

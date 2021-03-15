@@ -89,7 +89,6 @@ class GatedConv2d(nn.Layer):
         super(GatedConv2d, self).__init__()
         # Initialize the padding scheme
         if pad_type == 'reflect':
-            #self.pad = nn.ReflectionPad2d(padding)
             self.pad = nn.Pad2D([padding]*4,mode=pad_type)
         elif pad_type == 'replicate':
             self.pad = nn.Pad2D([padding]*4,mode=pad_type)

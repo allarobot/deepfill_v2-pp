@@ -1,12 +1,7 @@
 import os
 import numpy as np
 import cv2
-#import torch
-#import torch.nn as nn
-#import torchvision as tv
 import paddle
-import paddle.nn as nn
-import paddle.vision as pv
 import skimage
 import network
 import dataset
@@ -54,9 +49,6 @@ def load_dict(process_net, pretrained_net):
     process_dict = process_net.state_dict()
 
     # ToDO, Delete the extra keys of pretrained_dict that do not belong to process_dict
-    # Show items
-    # for item in pretrained_dict.items():
-    #     print(len(item),item[0],item[1])
     pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in process_dict}
     # Update process_dict using pretrained_dict
     process_dict.update(pretrained_dict)
